@@ -6,13 +6,13 @@ import openai
 openai.api_key = "REDACT"
 TOKEN = 'REDACT'
 
+# Function to get the response using OpenAI Chat API
 def getResponse(url):
     # get videoID from link
     parsedUrl = urlparse(url)
     qsDict = parse_qs(parsedUrl.query)
     videoId = qsDict.get('v')
     videoId = videoId[0]
-
 
     # uses the videoID to get transcript 
     finalTranscript = [] 
@@ -22,14 +22,18 @@ def getResponse(url):
         finalTranscript.append(output)
     summary = str(finalTranscript)
 
-    messages = [{"role": "system", "content": 'You are an extremely advanced summarization assistant. Given a list of strings, I want you to be able to summerize the strings into an informative paragraph with specific examples from the text. Only one paragraph for the response.'},
-                {"role": "user", "content": summary}]
+    messages = [
+        {"role": "system", "content": 'You are an extremely advanced summarization assistant. Given a list of strings, I want you to be able to summerize the strings into an informative paragraph with specific examples from the text. Only one paragraph for the response.'},
+        {"role": "user", "content": summary}
+    ]
     
-    gptResponse = openai.ChatCompletion.create(model="gpt-3.5-turbo-0613", messages = messages)
+    # Call OpenAI API to generate response
+    gptResponse = openai.ChatCompletion.create(model="gpt-3.5-turbo-0613", messages=messages)
     summaryResponse = gptResponse["choices"][0]["message"]["content"]
 
-    return(summaryResponse)
+    return summaryResponse
 
+# Function to send the response message
 async def sendMessage(message, user_message, is_private):
     try:
         response = getResponse(user_message)
@@ -60,6 +64,7 @@ async def on_message(message):
     valid_command = False
     user_message = user_message.split()
 
+    # Check for valid commands
     if user_message[0] == "$transcribe":
         valid_command = True
         user_message = " ".join(user_message[1:])
